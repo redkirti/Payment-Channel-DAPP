@@ -7,6 +7,7 @@ import names
 import csv
 import random
 
+count = 0
 
 #connect to the local ethereum blockchain
 provider = Web3.HTTPProvider('http://127.0.0.1:8545')
@@ -15,7 +16,7 @@ w3 = Web3(provider)
 print(w3.is_connected())
 
 #replace the address with your contract address (!very important)
-deployed_contract_address = '0x07020b38c03683476019Ba8c6B827E7343761129'
+deployed_contract_address = '0x909ba23ab8aCF1fdB61892Efa826C69802A1e9e0'
 
 #path of the contract json file. edit it with your contract json file
 compiled_contract_path ="build/contracts/Payment.json"
@@ -24,7 +25,6 @@ with open(compiled_contract_path) as file:
     contract_abi = contract_json['abi']
 contract = w3.eth.contract(address = deployed_contract_address, abi = contract_abi)
 
-counter = 0
 
 
 def createAcc(node1, node2):
@@ -34,13 +34,14 @@ def createAcc(node1, node2):
         "from": w3.eth.accounts[0],
         "gasPrice": w3.eth.gas_price,
     })
-    txn_receipt_json = json.loads(w3.to_json(txn_receipt))
+    # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
     # print(txn_receipt_json) # print transaction hash
 
     # print block info that has the transaction)
     # print(w3.eth.get_transaction(txn_receipt_json)) 
 
 def sendTxns():
+    global count
     sender = random.randrange(1, 101)
     receiver = random.randrange(1, 101)
     while(sender==receiver):
@@ -50,16 +51,17 @@ def sendTxns():
         "from": w3.eth.accounts[0],
         "gasPrice": w3.eth.gas_price,
     })
-    txn_receipt_json = json.loads(w3.to_json(txn_receipt))
+    # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
     # print(txn_receipt_json) # print transaction hash
     # print block info that has the transaction)
     # print(w3.eth.get_transaction(txn_receipt_json))
-    tx_receipt = w3.eth.get_transaction_receipt(txn_receipt_json)
+    tx_receipt = w3.eth.get_transaction_receipt(txn_receipt)
     processed_logs = contract.events.myEvent().process_receipt(tx_receipt)
-    # if len(logs)!=0:
-    #     counter+=1
-    #     print("Hello" + str(counter))
-    print(processed_logs)
+
+    if processed_logs[0]['args']['found'] == True:
+        count += 1
+        # print("Hello" + str(count))
+    # print(processed_logs)
     # print(txn_receipt_json)
 
 
@@ -72,7 +74,7 @@ for i in range(1,101):
         "from": w3.eth.accounts[0],
         "gasPrice": w3.eth.gas_price,
     })
-    txn_receipt_json = json.loads(w3.to_json(txn_receipt))
+    # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
     # print(txn_receipt_json) # print transaction hash
     # print block info that has the transaction)
     # print(w3.eth.get_transaction(txn_receipt_json)) 
@@ -96,14 +98,14 @@ for i in list(G.nodes):
 # plt.show()
 
 # Send 1000 random txns
-for i in range(200):
+for i in range(1000):
     sendTxns()
     if (((i+1) % 100) == 0):
         with open('output.csv', 'a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([i+1, counter])
-        # print(counter/100)
-        counter = 0
+            writer.writerow([i+1, count])
+        print(count/100)
+        count = 0
 
 
 
