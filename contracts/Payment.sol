@@ -4,20 +4,20 @@ pragma solidity >=0.4.22 <0.9.0;
 contract Payment {
 	// mapping( uint => uint[2][] ) public network;
 	mapping( uint => string ) public users;
-	
+	event myEvent(bool found);
 	uint[501][501] public network;
     function registerUser(uint user_id, string memory user_name) public {
 		users[user_id] = user_name;	
     }
 
-	function createAcc(uint user_id1, uint user_id2, uint amount1, uint amount2) public {
+	function createAcc(uint user_id1, uint user_id2, uint amount) public {
 		// network[user_id1].push([user_id2,0]);
 		// network[user_id2].push([user_id1,0]);
-		network[user_id1][user_id2] = amount1;
-		network[user_id2][user_id1] = amount2;
+		network[user_id1][user_id2] = amount/2;
+		network[user_id2][user_id1] = amount/2;
 	}
 
-	function sendAmount(uint user_id1, uint user_id2, uint amount) public {
+	function sendAmount(uint user_id1, uint user_id2) public {
 		bool[501] memory visited;
 		bool found = false;
 		uint front = 0 ;
@@ -33,7 +33,7 @@ contract Payment {
 			visited[node]= true;
 			for(uint i=1 ; i<= 500 ; i++)
 			{
-				if(visited[i] || i==node || network[node][i]<amount)
+				if(visited[i] || i==node || network[node][i]<1)
 					continue;
 				rear+=1;
 				qq[rear]= i;
@@ -52,14 +52,15 @@ contract Payment {
 		while(parent[node2]!=0)
 		{
 			uint pred = parent[node2];
-			network[node2][pred]+=amount;
-			network[pred][node2]-=amount;
+			network[node2][pred]+=1;
+			network[pred][node2]-=1;
 			node2 = pred;
 		} 
-
+		emit myEvent(found);
 	}
 
 	function closeAccount(uint user_id1, uint user_id2) public {
-
+		network[user_id1][user_id2] = 0;
+		network[user_id2][user_id1] = 0;
 	}
 }
