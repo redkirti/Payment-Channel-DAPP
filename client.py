@@ -10,13 +10,13 @@ import random
 count = 0
 
 #connect to the local ethereum blockchain
-provider = Web3.HTTPProvider('http://127.0.0.1:8545')
+provider = Web3.HTTPProvider('http://127.0.0.1:8545', request_kwargs={'timeout': 60})
 w3 = Web3(provider)
 #check if ethereum is connected
 print(w3.is_connected())
 
 #replace the address with your contract address (!very important)
-deployed_contract_address = '0x909ba23ab8aCF1fdB61892Efa826C69802A1e9e0'
+deployed_contract_address = '0xf83db10363A5BD5fB1D0f748F110F983b37C3391'
 
 #path of the contract json file. edit it with your contract json file
 compiled_contract_path ="build/contracts/Payment.json"
@@ -46,9 +46,11 @@ def sendTxns():
     receiver = random.randrange(1, 101)
     while(sender==receiver):
         receiver = random.randrange(1, 101)
+    print("Sender: " + str(sender) + ", Receiver: "+ str(receiver))
     txn_receipt = contract.functions.sendAmount(sender, receiver).transact({
         "chainId": w3.eth.chain_id,
         "from": w3.eth.accounts[0],
+        "gas": 1000000000,
         "gasPrice": w3.eth.gas_price,
     })
     # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
@@ -58,6 +60,7 @@ def sendTxns():
     tx_receipt = w3.eth.get_transaction_receipt(txn_receipt)
     processed_logs = contract.events.myEvent().process_receipt(tx_receipt)
 
+    print(processed_logs[0]['args']['found'])
     if processed_logs[0]['args']['found'] == True:
         count += 1
         # print("Hello" + str(count))
@@ -67,20 +70,16 @@ def sendTxns():
 
 
 # Create 100 users
-for i in range(1,101):
-    name = names.get_full_name()
-    txn_receipt = contract.functions.registerUser(i, name).transact({
-        "chainId": w3.eth.chain_id,
-        "from": w3.eth.accounts[0],
-        "gasPrice": w3.eth.gas_price,
-    })
-    # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
-    # print(txn_receipt_json) # print transaction hash
-    # print block info that has the transaction)
-    # print(w3.eth.get_transaction(txn_receipt_json)) 
+# for i in range(1,101):
+#     name = names.get_full_name()
+#     txn_receipt = contract.functions.registerUser(i, name).transact({
+#         "chainId": w3.eth.chain_id,
+#         "from": w3.eth.accounts[0],
+#         "gasPrice": w3.eth.gas_price,
+#     })
 
 # Make graph
-G= nx.barabasi_albert_graph(101,3)
+G= nx.barabasi_albert_graph(101,2)
 G.remove_node(0)
 
 rows, cols = (101, 101)
@@ -99,6 +98,7 @@ for i in list(G.nodes):
 
 # Send 1000 random txns
 for i in range(1000):
+    print("This is txn: " + str(i+1) )
     sendTxns()
     if (((i+1) % 100) == 0):
         with open('output.csv', 'a', newline='') as file:
@@ -111,3 +111,7 @@ for i in range(1000):
 
 
 # print(contract.functions.network(1,2).call())
+# createAcc(1,2)
+# createAcc(1,4)
+# createAcc(2,3)
+# sendTxns(1,3)

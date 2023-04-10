@@ -5,7 +5,7 @@ contract Payment {
 	// mapping( uint => uint[2][] ) public network;
 	mapping( uint => string ) public users;
 	event myEvent(bool found);
-	uint[501][501] public network;
+	uint[110][110] public network;
     function registerUser(uint user_id, string memory user_name) public {
 		users[user_id] = user_name;	
     }
@@ -18,12 +18,12 @@ contract Payment {
 	}
 
 	function sendAmount(uint user_id1, uint user_id2) public {
-		bool[501] memory visited;
+		bool[110] memory visited;
 		bool found = false;
 		uint front = 0 ;
 		uint rear  = 1 ;
-		uint [501] memory parent;
-		uint [501] memory qq;
+		uint [110] memory parent;
+		uint [1100] memory qq;
 		qq[1] = user_id1;
 		parent[user_id1] = 0;
 		while(front!=rear)
@@ -31,7 +31,7 @@ contract Payment {
 			front+=1;
 			uint node = qq[front];
 			visited[node]= true;
-			for(uint i=1 ; i<= 500 ; i++)
+			for(uint i=1 ; i<= 100 ; i++)
 			{
 				if(visited[i] || i==node || network[node][i]<1)
 					continue;
