@@ -26,7 +26,7 @@ with open(compiled_contract_path) as file:
 contract = w3.eth.contract(address = deployed_contract_address, abi = contract_abi)
 
 
-
+# Function to create payment channel
 def createAcc(node1, node2):
     amount = int(rnd.exponential(scale=10))
     txn_receipt = contract.functions.createAcc(node1, node2, amount).transact({
@@ -34,14 +34,11 @@ def createAcc(node1, node2):
         "from": w3.eth.accounts[0],
         "gasPrice": w3.eth.gas_price,
     })
-    # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
-    # print(txn_receipt_json) # print transaction hash
 
-    # print block info that has the transaction)
-    # print(w3.eth.get_transaction(txn_receipt_json)) 
-
+# Function to send transctions
 def sendTxns():
     global count
+    # Selecting random sender and receiver
     sender = random.randrange(1, 101)
     receiver = random.randrange(1, 101)
     while(sender==receiver):
@@ -53,35 +50,32 @@ def sendTxns():
         "gas": 1000000000,
         "gasPrice": w3.eth.gas_price,
     })
-    # txn_receipt_json = json.loads(w3.to_json(txn_receipt))
-    # print(txn_receipt_json) # print transaction hash
-    # print block info that has the transaction)
-    # print(w3.eth.get_transaction(txn_receipt_json))
     tx_receipt = w3.eth.get_transaction_receipt(txn_receipt)
     processed_logs = contract.events.myEvent().process_receipt(tx_receipt)
-
+    # Finding if the transaction finished successfully
     print(processed_logs[0]['args']['found'])
     if processed_logs[0]['args']['found'] == True:
         count += 1
-        # print("Hello" + str(count))
-    # print(processed_logs)
-    # print(txn_receipt_json)
 
+
+# Using library to generate a graph following power law distribution
+G= nx.barabasi_albert_graph(101,2)
+G.remove_node(0)
+nx.draw(G, with_labels=True)
+plt.show()
 
 
 # Create 100 users
-# for i in range(1,101):
-#     name = names.get_full_name()
-#     txn_receipt = contract.functions.registerUser(i, name).transact({
-#         "chainId": w3.eth.chain_id,
-#         "from": w3.eth.accounts[0],
-#         "gasPrice": w3.eth.gas_price,
-#     })
+for i in range(1,101):
+    # Generating a random name
+    name = names.get_full_name()
+    txn_receipt = contract.functions.registerUser(i, name).transact({
+        "chainId": w3.eth.chain_id,
+        "from": w3.eth.accounts[0],
+        "gasPrice": w3.eth.gas_price,
+    })
 
-# Make graph
-G= nx.barabasi_albert_graph(101,2)
-G.remove_node(0)
-
+# Creating payment channel network based on graph
 rows, cols = (101, 101)
 visited = [[False for i in range(cols)] for j in range(rows)]
 
@@ -93,25 +87,14 @@ for i in list(G.nodes):
             visited[j][i] = True
             createAcc(i,j)
 
-# nx.draw(G, with_labels=True)
-# plt.show()
-
 # Send 1000 random txns
 for i in range(1000):
     print("This is txn: " + str(i+1) )
     sendTxns()
+    # Output to a file every 100 transactions
     if (((i+1) % 100) == 0):
         with open('output.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow([i+1, count])
         print(count/100)
         count = 0
-
-
-
-
-# print(contract.functions.network(1,2).call())
-# createAcc(1,2)
-# createAcc(1,4)
-# createAcc(2,3)
-# sendTxns(1,3)
