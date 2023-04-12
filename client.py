@@ -88,7 +88,7 @@ for i in list(G.nodes):
             createAcc(i,j)
 
 # Send 1000 random txns
-for i in range(1000):
+for i in range(10000):
     print("This is txn: " + str(i+1) )
     sendTxns()
     # Output to a file every 100 transactions

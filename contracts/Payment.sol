@@ -16,6 +16,9 @@ contract Payment {
 
 	// Function to create a payment channel between two nodes
 	function createAcc(uint user_id1, uint user_id2, uint amount) public {
+		// Check if both users are registered
+		require(keccak256(abi.encodePacked(users[user_id1])) !=  keccak256(abi.encodePacked("")));
+		require(keccak256(abi.encodePacked(users[user_id2])) !=  keccak256(abi.encodePacked("")));
 		network[user_id1][user_id2] = amount/2;
 		network[user_id2][user_id1] = amount/2;
 	}
